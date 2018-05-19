@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" tiledversion="1.1.5" orientation="orthogonal" renderorder="right-down" width="64" height="12" tilewidth="12" tileheight="12" infinite="0" nextobjectid="1">
+ <tileset firstgid="1" name="myBlocks" tilewidth="12" tileheight="12" tilecount="100" columns="10">
+  <image source="../blocks/myBlocks.png" width="120" height="120"/>
+  <tile id="0">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="1">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="2">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="3">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="4">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="5">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="6">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="7">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="8">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="9">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="10">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="11">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="12">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="13">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="14">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="15">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="16">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="17">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="18">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="19">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="20">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="21">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="22">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="23">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="24">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="25">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0" width="12" height="12"/>
+   </objectgroup>
+  </tile>
+ </tileset>
+ <layer name="Слой тайлов 1" width="64" height="12">
+  <data encoding="csv">
+17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,
+17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,
+17,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,
+17,17,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,
+17,17,11,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,
+17,17,11,11,11,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,
+17,12,12,12,11,11,11,11,9,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,
+17,12,12,12,12,12,12,11,11,9,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,
+17,12,12,12,12,12,12,11,11,9,9,9,9,9,15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,
+17,12,12,12,12,12,12,12,11,11,14,14,14,9,9,15,25,0,0,0,0,0,0,0,0,8,8,8,5,5,5,5,5,5,5,3,3,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,
+17,12,12,12,12,12,12,12,11,11,14,14,14,14,9,15,7,7,7,7,7,7,7,7,7,8,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,17,
+16,17,17,16,16,17,17,16,17,17,17,16,17,16,16,17,16,16,17,16,16,17,17,16,16,17,17,17,16,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17
+</data>
+ </layer>
+ <objectgroup name="Слой объектов 1"/>
+</map>
