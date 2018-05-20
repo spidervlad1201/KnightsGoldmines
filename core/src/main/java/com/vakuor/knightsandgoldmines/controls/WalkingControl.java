@@ -9,8 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.vakuor.knightsandgoldmines.GameLogic;
 
 public class WalkingControl extends Actor {
-}
-   /* //размер джоя
+
+    //размер джоя
     public static  float SIZE = 4f;
     //размер движущейся части (khob)
     public static  float CSIZE = 3f;
@@ -67,14 +67,16 @@ public class WalkingControl extends Actor {
 
     //отрисовка
     public void draw(SpriteBatch batch) {
-
+        System.out.println("DrawControl");
         batch.draw(GameLogic.controlsframes.get(10), getX(), getY(),getWidth(), getHeight());
         batch.draw(GameLogic.controlsframes.get(0),
                 (float)(position.x+WalkingControl.SIZE/2-WalkingControl.CSIZE/2+getOffsetPosition().x),
                 (float)(position.y+WalkingControl.SIZE/2-WalkingControl.CSIZE/2+getOffsetPosition().y),
                 WalkingControl.CSIZE , WalkingControl.CSIZE );
 
+
     }
+
 
 
     public Actor hit(float x, float y, boolean touchable) {
@@ -123,27 +125,21 @@ public class WalkingControl extends Actor {
                     angle+=360;
 
             //в зависимости от угла указываем направление, куда двигать игрока
-            if(angle>40 && angle<140 && GameLogic.player.grounded) {
-                GameLogic.player.velocity.y += GameLogic.Player.JUMP_VELOCITY;
-                GameLogic.player.state = GameLogic.Player.State.Jumping;
-                GameLogic.player.grounded = false;
+            if(angle>40 && angle<140 && GameLogic.player.isGrounded()) {
+                GameLogic.player.jump();
             }
             /*if(angle>220 && angle<320)
                 ((GameLogic.Player)world.selectedActor).downPressed();*/
 
-/*
+
             if(angle>130 && angle<230)
             {
-                GameLogic.player.velocity.x = -GameLogic.Player.MAX_VELOCITY;
-                if (GameLogic.player.grounded) GameLogic.player.state = GameLogic.Player.State.Walking;
-                GameLogic.player.facesRight = false;
+                GameLogic.player.move(false);
             }
 
             if(angle<50 || angle>310)
             {
-                GameLogic.player.velocity.x = GameLogic.Player.MAX_VELOCITY;
-                if (GameLogic.player.grounded) GameLogic.player.state = GameLogic.Player.State.Walking;
-                GameLogic.player.facesRight = true;
+                GameLogic.player.move(true);
             }
 
 
@@ -151,8 +147,8 @@ public class WalkingControl extends Actor {
 
 
             angle = (float)(angle*Math.PI/180);
-            getOffsetPosition().x = (float)((calcX*calcX + calcY* calcY>1F)? Math.cos(angle)*0.75F: calcX);
-            getOffsetPosition().y = (float)((calcX*calcX + calcY* calcY>1F)? Math.sin(angle)*0.75F: calcY);
+            //getOffsetPosition().x = (float)((calcX*calcX + calcY* calcY>1F)? Math.cos(angle)*0.75F: calcX);
+            //getOffsetPosition().y = (float)((calcX*calcX + calcY* calcY>1F)? Math.sin(angle)*0.75F: calcY);
 
         }
         else{
@@ -162,4 +158,4 @@ public class WalkingControl extends Actor {
         }
 
     }
-}*/
+}

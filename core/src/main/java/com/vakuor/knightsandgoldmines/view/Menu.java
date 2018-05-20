@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.vakuor.knightsandgoldmines.GameLogic;
 import com.vakuor.knightsandgoldmines.Main;
 
 public class Menu implements Screen {
@@ -83,6 +84,7 @@ public class Menu implements Screen {
 
         if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
             //game.setScreen(new MainGameScreen(game));
+            new GameLogic();
             dispose();
         }
     }

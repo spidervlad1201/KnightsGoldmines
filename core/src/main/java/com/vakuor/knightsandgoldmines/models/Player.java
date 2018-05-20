@@ -124,7 +124,7 @@ public class Player extends Actor {
             batch.draw(headframe,  position.x+HeadWIDTH,  position.y+Player.HEIGHT/3+HeadHEIGHT, Player.WIDTH, Player.HEIGHT);
         } else {
             batch.draw(frame,  position.x + 1.5f*Player.WIDTH,  position.y-Player.HEIGHT/2-0.5f/Player.HEIGHT, -Player.WIDTH*2, Player.HEIGHT*2);
-            batch.draw(headframe,  position.x + 1.5f*Player.WIDTH,  position.y-Player.HEIGHT/2-0.5f/Player.HEIGHT, -Player.WIDTH*2, Player.HEIGHT*2);
+            batch.draw(headframe,  position.x+Player.WIDTH -HeadWIDTH,  position.y+Player.HEIGHT/3+HeadHEIGHT, -Player.WIDTH, Player.HEIGHT);
         }
     }
 

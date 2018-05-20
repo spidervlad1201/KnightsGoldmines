@@ -7,6 +7,9 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -14,10 +17,16 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
+import com.badlogic.gdx.scenes.scene2d.ui.Widget;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.vakuor.knightsandgoldmines.controls.WalkingControl;
 import com.vakuor.knightsandgoldmines.models.Player;
 
 public class GameLogic extends InputAdapter implements ApplicationListener {
@@ -29,7 +38,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     private TiledMap map;
     public static OrthogonalTiledMapRenderer renderer;
     private OrthographicCamera camera;
-    public Player player;
+    public static Player player;
     private Pool<Rectangle> rectPool = new Pool<Rectangle>() {
         @Override
         protected Rectangle newObject() {
@@ -45,6 +54,17 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
     public static Array<TextureAtlas.AtlasRegion> controlsframes;
 
+    //TouchPad
+    private SpriteBatch batch;
+    private Touchpad touchpad;
+    private Touchpad.TouchpadStyle touchpadStyle;
+    private Skin touchpadSkin;
+    private Drawable touchBackground;
+    private Drawable touchKnob;
+    private Texture blockTexture;
+    private Sprite blockSprite;
+    private float blockSpeed;
+    /////////////////////////////////////////////////////
 
     @Override
     public void create() {
@@ -60,9 +80,9 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         Gdx.input.setInputProcessor(stage);
         player = new Player();
 
-        stage.addActor(player);
-        stage.setKeyboardFocus(player);
+        stage.getRoot().addActor(player);
 
+        //stage.setKeyboardFocus(player);
         player.setPosition(20, 20);
         // create an orthographic camera, shows us 30x20 units of the world
         camera = (OrthographicCamera) stage.getCamera();
@@ -90,6 +110,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         updatePlayer(deltaTime);
 
         // let the camera follow the koala, x-axis only
+
         camera.position.x = player.getPosition().x;
         camera.position.y = player.getPosition().y;
         camera.update();
@@ -101,6 +122,10 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
         stage.act(deltaTime);
         stage.draw();
+
+//        stage.getBatch().begin();
+//        control.draw((SpriteBatch) stage.getBatch());
+//        stage.getBatch().end();
 
 
         // render debug rectangles
@@ -126,7 +151,6 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
             debug = !debug;
 
         player.addVelocity(0, GRAVITY);
-        System.out.println(deltaTime);
 
 
         // multiply by delta time so we know how far we go

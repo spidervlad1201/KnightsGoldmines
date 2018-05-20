@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.vakuor.knightsandgoldmines.GameLogic;
 import com.vakuor.knightsandgoldmines.Main;
 
 /** Launches the Android application. */
@@ -18,6 +19,6 @@ public class AndroidLauncher extends AndroidApplication {
         config.hideStatusBar = true;
         //config.useRotationVectorSensor = true; // разобраться с ориентацией экрана
 
-        initialize(new Main(), config);
+        initialize(new GameLogic(), config);
     }
 }

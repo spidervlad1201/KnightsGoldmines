@@ -4,6 +4,7 @@ import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.vakuor.knightsandgoldmines.GameLogic;
+import com.vakuor.knightsandgoldmines.Main;
 
 /** Launches the desktop (LWJGL) application. */
 public class DesktopLauncher {
