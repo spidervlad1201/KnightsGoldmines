@@ -3,15 +3,14 @@ package com.vakuor.knightsandgoldmines.controls;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.vakuor.knightsandgoldmines.view.GameScreen;
+import com.vakuor.knightsandgoldmines.GameLogic;
 
 public class WalkingControl extends Actor {
-
-    //размер джоя
+}
+   /* //размер джоя
     public static  float SIZE = 4f;
     //размер движущейся части (khob)
     public static  float CSIZE = 3f;
@@ -23,7 +22,6 @@ public class WalkingControl extends Actor {
     //угол для определения направления
     float angle;
     //public static int Opacity = 1;
-    World world;
 
     //координаты отклонения khob
     protected Vector2 offsetPosition = new Vector2();
@@ -35,7 +33,6 @@ public class WalkingControl extends Actor {
         this.position = pos;
         this.bounds.width = SIZE;
         this.bounds.height = SIZE;
-        this.world = world;
 
         getOffsetPosition().x = 0;
         getOffsetPosition().y = 0;
@@ -69,10 +66,10 @@ public class WalkingControl extends Actor {
 
 
     //отрисовка
-    public void draw(SpriteBatch batch, float parentAlfa) {
+    public void draw(SpriteBatch batch) {
 
-        batch.draw(GameScreen.controlsframes.get(10), getX(), getY(),getWidth(), getHeight());
-        batch.draw(GameScreen.controlsframes.get(0),
+        batch.draw(GameLogic.controlsframes.get(10), getX(), getY(),getWidth(), getHeight());
+        batch.draw(GameLogic.controlsframes.get(0),
                 (float)(position.x+WalkingControl.SIZE/2-WalkingControl.CSIZE/2+getOffsetPosition().x),
                 (float)(position.y+WalkingControl.SIZE/2-WalkingControl.CSIZE/2+getOffsetPosition().y),
                 WalkingControl.CSIZE , WalkingControl.CSIZE );
@@ -110,7 +107,7 @@ public class WalkingControl extends Actor {
         if(((calcX*calcX + calcY* calcY)<=WalkingControl.CONTRLRADIUS*WalkingControl.CONTRLRADIUS)
                 ){
 
-            world.resetSelected();
+            //world.resetSelected();
 
             //пределяем угол касания
             double angle = Math.atan(calcY/calcX)*180/Math.PI;
@@ -126,22 +123,31 @@ public class WalkingControl extends Actor {
                     angle+=360;
 
             //в зависимости от угла указываем направление, куда двигать игрока
-            if(angle>40 && angle<140)
-                ((Player)world.selectedActor).upPressed();
+            if(angle>40 && angle<140 && GameLogic.player.grounded) {
+                GameLogic.player.velocity.y += GameLogic.Player.JUMP_VELOCITY;
+                GameLogic.player.state = GameLogic.Player.State.Jumping;
+                GameLogic.player.grounded = false;
+            }
+            /*if(angle>220 && angle<320)
+                ((GameLogic.Player)world.selectedActor).downPressed();*/
 
-            if(angle>220 && angle<320)
-                ((Player)world.selectedActor).downPressed();
-
-
+/*
             if(angle>130 && angle<230)
-                ((Player)world.selectedActor).leftPressed();
+            {
+                GameLogic.player.velocity.x = -GameLogic.Player.MAX_VELOCITY;
+                if (GameLogic.player.grounded) GameLogic.player.state = GameLogic.Player.State.Walking;
+                GameLogic.player.facesRight = false;
+            }
 
             if(angle<50 || angle>310)
-                ((Player)world.selectedActor).rightPressed();
+            {
+                GameLogic.player.velocity.x = GameLogic.Player.MAX_VELOCITY;
+                if (GameLogic.player.grounded) GameLogic.player.state = GameLogic.Player.State.Walking;
+                GameLogic.player.facesRight = true;
+            }
 
 
             //двигаем игрока
-            ((Player)world.selectedActor).processInput();
 
 
             angle = (float)(angle*Math.PI/180);
@@ -151,10 +157,9 @@ public class WalkingControl extends Actor {
         }
         else{
 
-            world.resetSelected();
             getOffsetPosition().x = 0;
             getOffsetPosition().y = 0;
         }
 
     }
-}
+}*/

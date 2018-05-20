@@ -3,10 +3,7 @@ package com.vakuor.knightsandgoldmines.desktop;
 import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.vakuor.knightsandgoldmines.Main;
-import com.vakuor.knightsandgoldmines.view.GameScreen;
-
-import ru.test.gdxtest.MainScreen;
+import com.vakuor.knightsandgoldmines.GameLogic;
 
 /** Launches the desktop (LWJGL) application. */
 public class DesktopLauncher {
@@ -15,7 +12,7 @@ public class DesktopLauncher {
     }
 
     private static LwjglApplication createApplication() {
-        return new LwjglApplication(new GameScreen(), getDefaultConfiguration());
+        return new LwjglApplication(new GameLogic(), getDefaultConfiguration());
     }
 
     private static LwjglApplicationConfiguration getDefaultConfiguration() {

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.vakuor.knightsandgoldmines.view.Menu;
 
 public class Main extends Game {
+
     public SpriteBatch batch;
     public BitmapFont font;
     public AssetManager manager;
@@ -26,7 +27,6 @@ public class Main extends Game {
         font = new BitmapFont();
         fps = 60;
         manager = new AssetManager();
-
         this.setScreen(new Menu(this));
     }
 
@@ -34,16 +34,11 @@ public class Main extends Game {
     public void render () {
 //		Gdx.gl.glClearColor(0, 0, 0, 1);
 //		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        //System.out.println("Main.render\n");
         if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) Gdx.app.exit();
-
         super.render();
-
-
         frames = Gdx.graphics.getFramesPerSecond();
         if(frames>0 && frames < Integer.MAX_VALUE)
             fps = frames;
-
         javaHeap = Gdx.app.getJavaHeap();//потребление памяти Java//лишнее
         nativeHeap = Gdx.app.getNativeHeap();//нативной heap памяти//лишнее
 
@@ -52,19 +47,10 @@ public class Main extends Game {
 //			camera.unproject(touchPos);
 //			player.x = touchPos.x - player.width/2;
 //		}
-//
-//		//упарвление с клавы
-//		if(Gdx.input.isKeyPressed(Input.Keys.LEFT)) player.x -= 200 * Gdx.graphics.getDeltaTime();
-//		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) player.x +=200*Gdx.graphics.getDeltaTime();
-//
-//
 //		camera.update();
 //		batch.setProjectionMatrix(camera.combined);
 //		batch.begin();
-//
 //		batch.draw(img, 0, 0);
-//		batch.draw(playerTexture, player.x, player.y);
-//
 //		batch.end();
     }
 

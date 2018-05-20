@@ -1,4 +1,4 @@
-package com.vakuor.knightsandgoldmines.view;
+package com.vakuor.knightsandgoldmines;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -7,54 +7,29 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.vakuor.knightsandgoldmines.models.Player;
 
-import ru.test.gdxtest.MainScreen;
+public class GameLogic extends InputAdapter implements ApplicationListener {
 
-public class GameScreen extends InputAdapter implements ApplicationListener {
+    static final float myConst = 1.5f;
 
-    static class Player{
-        static float WIDTH;
-        static float HEIGHT;
-        static float MAX_VELOCITY = 10f;
-        static float JUMP_VELOCITY = 40f;
-        static float DAMPING = 0.87f;
-
-        enum State {
-            Standing, Walking, Jumping
-        }
-
-        final Vector2 position = new Vector2();
-        final Vector2 velocity = new Vector2();
-        State state = State.Walking;
-        float stateTime = 0;
-        boolean facesRight = true;
-        boolean grounded = false;
-    }
-
+    private Stage stage;
 
     private TiledMap map;
-    private OrthogonalTiledMapRenderer renderer;
+    public static OrthogonalTiledMapRenderer renderer;
     private OrthographicCamera camera;
-    private Texture playerTexture;
-    private Animation<TextureRegion> stand;
-    private Animation<TextureRegion> walk;
-    private Animation<TextureRegion> jump;
-    private Player player;
+    public Player player;
     private Pool<Rectangle> rectPool = new Pool<Rectangle>() {
         @Override
         protected Rectangle newObject() {
@@ -68,52 +43,31 @@ public class GameScreen extends InputAdapter implements ApplicationListener {
     private boolean debug = true;
     private ShapeRenderer debugRenderer;
 
-
-    private TextureAtlas playerTextureAtlas,controlsTextureAtlas;
-    private Array<TextureAtlas.AtlasRegion> bodyframes;
-    private Array<TextureAtlas.AtlasRegion> standframes;
-    private Array<TextureAtlas.AtlasRegion> jumpframes;
     public static Array<TextureAtlas.AtlasRegion> controlsframes;
 
 
     @Override
     public void create() {
-        // load the koala frames, split them, and assign them to Animations
-        playerTextureAtlas = new TextureAtlas("visual/output/Archer/Archers.atlas");
-        controlsTextureAtlas = new TextureAtlas("visual/output/flatDark/Controls.atlas");
-
-        bodyframes =  playerTextureAtlas.findRegions("body");
-        standframes =  playerTextureAtlas.findRegions("idle");
-        jumpframes =  playerTextureAtlas.findRegions("jump");
-        controlsframes = controlsTextureAtlas.findRegions("flatDark");
-
-        stand = new Animation(0, standframes);
-        jump = new Animation(1, jumpframes);
-        walk = new Animation(0.15f,bodyframes);
-
-
-
-        walk.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
-
-        // figure out the width and height of the koala for collision
-        // detection and rendering by converting a koala frames pixel
-        // size into world units (1 unit == 16 pixels)
-        Player.WIDTH = 1 / 16f * bodyframes.get(0).getRegionWidth();
-        Player.HEIGHT = 1 / 16f * bodyframes.get(0).getRegionHeight();
+        controlsframes = new TextureAtlas("visual/output/flatDark/Controls.atlas")
+                .findRegions("flatDark");
 
         // load the map, set the unit scale to 1/12 (1 unit == 12 pixels)
         map = new TmxMapLoader().load("logical/maps/Map/level1.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, 1 / 12f);
 
+        ScreenViewport viewport = new ScreenViewport();
+        stage = new Stage(viewport);
+        Gdx.input.setInputProcessor(stage);
+        player = new Player();
+
+        stage.addActor(player);
+        stage.setKeyboardFocus(player);
+
+        player.setPosition(20, 20);
         // create an orthographic camera, shows us 30x20 units of the world
-        camera = new OrthographicCamera();
+        camera = (OrthographicCamera) stage.getCamera();
         camera.setToOrtho(false, 30, 20);
         camera.update();
-
-        // create the Koala we want to move around the world
-        player = new Player();
-        player.position.set(20, 20);
-        //System.out.println(Player.HEIGHT);
 
         debugRenderer = new ShapeRenderer();
     }
@@ -136,8 +90,8 @@ public class GameScreen extends InputAdapter implements ApplicationListener {
         updatePlayer(deltaTime);
 
         // let the camera follow the koala, x-axis only
-        camera.position.x = player.position.x;
-        camera.position.y = player.position.y;
+        camera.position.x = player.getPosition().x;
+        camera.position.y = player.getPosition().y;
         camera.update();
 
         // set the TiledMapRenderer view based on what the
@@ -145,61 +99,40 @@ public class GameScreen extends InputAdapter implements ApplicationListener {
         renderer.setView(camera);
         renderer.render();
 
-        // render the koala
-        renderPlayer(deltaTime);
+        stage.act(deltaTime);
+        stage.draw();
+
 
         // render debug rectangles
         if (debug) renderDebug();
     }
 
     private void updatePlayer(float deltaTime) {
-        if (deltaTime == 0) return;
-
-        if (deltaTime > 0.1f)
-            deltaTime = 0.1f;
-
-        player.stateTime += deltaTime;
 
         // check input and apply to velocity & state
-        if ((Gdx.input.isKeyJustPressed(Input.Keys.SPACE)|| isTouched(0.5f, 1)) && player.grounded) {
-            player.velocity.y += Player.JUMP_VELOCITY;
-            player.state = Player.State.Jumping;
-            player.grounded = false;
+        if ((Gdx.input.isKeyJustPressed(Input.Keys.SPACE)|| isTouched(0.5f, 1)) && player.isGrounded()) {
+            player.jump();
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A) || isTouched(0, 0.25f)) {
-            player.velocity.x = -Player.MAX_VELOCITY;
-            if (player.grounded) player.state = Player.State.Walking;
-            player.facesRight = false;
+            player.move(false);
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D) || isTouched(0.25f, 0.5f)) {
-            player.velocity.x = Player.MAX_VELOCITY;
-            if (player.grounded) player.state = Player.State.Walking;
-            player.facesRight = true;
+            player.move(true);
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.B))
             debug = !debug;
 
-        // apply gravity if we are falling
-        player.velocity.add(0, GRAVITY);
+        player.addVelocity(0, GRAVITY);
+        System.out.println(deltaTime);
 
-        // clamp the velocity to the maximum, x-axis only
-        player.velocity.x = MathUtils.clamp(player.velocity.x,
-                -Player.MAX_VELOCITY, Player.MAX_VELOCITY);
-
-        // If the velocity is < 1, set it to 0 and set state to Standing
-        if (Math.abs(player.velocity.x) < 1) {
-            player.velocity.x = 0;
-            if (player.grounded) player.state = Player.State.Standing;
-        }
 
         // multiply by delta time so we know how far we go
         // in this frame
         player.velocity.scl(deltaTime);
-
-        // perform collision detection & response, on each axis, separately
+        // perform collision detection & response, on each axis, separately//todo:вынести эту хрень отсюда
         // if the player is moving right, check the tiles to the right of it's
         // right bounding box edge, otherwise check the ones to the left
         Rectangle playerRect = rectPool.obtain();
@@ -220,6 +153,7 @@ public class GameScreen extends InputAdapter implements ApplicationListener {
                 break;
             }
         }
+
         playerRect.x = player.position.x;
 
         // if the player is moving upwards, check the tiles to the top of its
@@ -246,7 +180,7 @@ public class GameScreen extends InputAdapter implements ApplicationListener {
                 } else {
                     player.position.y = tile.y + tile.height;
                     // if we hit the ground, mark us as grounded so we can jump
-                    player.grounded = true;
+                    player.setGrounded(true);
                 }
                 player.velocity.y = 0;
                 break;
@@ -261,7 +195,7 @@ public class GameScreen extends InputAdapter implements ApplicationListener {
 
         // Apply damping to the velocity on the x-axis so we don't
         // walk infinitely once a key was pressed
-        player.velocity.x *= Player.DAMPING;
+        player.velocity.x *= player.DAMPING;
     }
 
     private boolean isTouched(float startX, float endX) {
@@ -292,40 +226,7 @@ public class GameScreen extends InputAdapter implements ApplicationListener {
         }
     }
 
-    private void renderPlayer(float deltaTime) {
-        // based on the player state, get the animation frame
-        TextureRegion frame = null;
-        switch (player.state) {
-            case Standing:
-                frame = stand.getKeyFrame(player.stateTime);
-                break;
-            case Walking:
-                frame = walk.getKeyFrame(player.stateTime);
-                break;
-            case Jumping:{
-                if(player.velocity.y>=0){
-                    frame = jump.getKeyFrame(0);}
-                else if(player.velocity.y<-30){
-                    frame = jump.getKeyFrame(2);}
-                else if(player.velocity.y<0){
-                    frame = jump.getKeyFrame(1);}
-                break;
-            }
-        }
 
-
-        // draw the player, depending on the current velocity
-        // on the x-axis, draw the player facing either right
-        // or left
-        Batch batch = renderer.getBatch();
-        batch.begin();
-        if (player.facesRight) {
-            batch.draw(frame, player.position.x-Player.WIDTH/2, player.position.y-Player.HEIGHT/2-0.5f/Player.HEIGHT, Player.WIDTH*2, Player.HEIGHT*2);
-        } else {
-            batch.draw(frame, player.position.x + 1.5f*Player.WIDTH, player.position.y-Player.HEIGHT/2-0.5f/Player.HEIGHT, -Player.WIDTH*2, Player.HEIGHT*2);
-        }
-        batch.end();
-    }
 
     private void renderDebug() {
         debugRenderer.setProjectionMatrix(camera.combined);
@@ -360,6 +261,5 @@ public class GameScreen extends InputAdapter implements ApplicationListener {
 
     @Override
     public void dispose() {
-        playerTextureAtlas.dispose();
     }
 }
