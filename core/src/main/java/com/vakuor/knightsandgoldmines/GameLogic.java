@@ -32,12 +32,14 @@ import com.vakuor.knightsandgoldmines.models.Player;
 public class GameLogic extends InputAdapter implements ApplicationListener {
 
     static final float myConst = 1.5f;
+    static float aspectRatio;
 
     private Stage stage;
 
     private TiledMap map;
     public static OrthogonalTiledMapRenderer renderer;
     private OrthographicCamera camera;
+    private ScreenViewport viewport;
     public static Player player;
     private Pool<Rectangle> rectPool = new Pool<Rectangle>() {
         @Override
@@ -55,38 +57,53 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     public static Array<TextureAtlas.AtlasRegion> controlsframes;
 
     //TouchPad
-    private SpriteBatch batch;
+    //private SpriteBatch batch;
     private Touchpad touchpad;
     private Touchpad.TouchpadStyle touchpadStyle;
     private Skin touchpadSkin;
     private Drawable touchBackground;
     private Drawable touchKnob;
-    private Texture blockTexture;
-    private Sprite blockSprite;
-    private float blockSpeed;
     /////////////////////////////////////////////////////
 
     @Override
     public void create() {
+
+        aspectRatio = (float) Gdx.graphics.getWidth()/(float) Gdx.graphics.getHeight();
+        camera = new OrthographicCamera();
+        viewport = new ScreenViewport();
+        camera.setToOrtho(false, 30f, 20f);
+
+        //touchpadskin
         controlsframes = new TextureAtlas("visual/output/flatDark/Controls.atlas")
                 .findRegions("flatDark");
 
+
+        touchpadSkin = new Skin();
+        touchpadSkin.add("touchBackground",new Texture(Gdx.files.internal("visual/input/flatDark/flatDark_10.png")));
+        touchpadSkin.add("touchKnob",new Texture(Gdx.files.internal("visual/input/flatDark/flatDark_00.png")));
+        touchpadStyle = new Touchpad.TouchpadStyle();
+        touchBackground = touchpadSkin.getDrawable("touchBackground");
+        touchKnob = touchpadSkin.getDrawable("touchKnob");
+        touchpadStyle.background = touchBackground;
+        touchpadStyle.knob = touchKnob;
+        touchpad = new Touchpad(10,touchpadStyle);
+        touchpad.setBounds(15,15,200,200);
+
+        stage = new Stage(viewport);
+        stage.addActor(touchpad);
+        Gdx.input.setInputProcessor(stage);
         // load the map, set the unit scale to 1/12 (1 unit == 12 pixels)
         map = new TmxMapLoader().load("logical/maps/Map/level1.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, 1 / 12f);
 
-        ScreenViewport viewport = new ScreenViewport();
-        stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
         player = new Player();
-
         stage.getRoot().addActor(player);
-
-        //stage.setKeyboardFocus(player);
         player.setPosition(20, 20);
+
         // create an orthographic camera, shows us 30x20 units of the world
-        camera = (OrthographicCamera) stage.getCamera();
-        camera.setToOrtho(false, 30, 20);
+        //camera = (OrthographicCamera) stage.getCamera();
+        //camera.setToOrtho(false, 30, 20);
+
         camera.update();
 
         debugRenderer = new ShapeRenderer();
@@ -94,7 +111,8 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
     @Override
     public void resize(int width, int height) {
-
+        aspectRatio = (float) Gdx.graphics.getWidth()/(float) Gdx.graphics.getHeight();
+        viewport.update(width,height);
     }
 
     @Override
@@ -103,14 +121,12 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         Gdx.gl.glClearColor(0.7f, 0.7f, 1.0f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // get the delta time
         float deltaTime = Gdx.graphics.getDeltaTime();
 
         // update the koala (process input, collision detection, position update)
         updatePlayer(deltaTime);
 
         // let the camera follow the koala, x-axis only
-
         camera.position.x = player.getPosition().x;
         camera.position.y = player.getPosition().y;
         camera.update();
