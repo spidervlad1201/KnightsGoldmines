@@ -4,29 +4,30 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
-import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.vakuor.knightsandgoldmines.controls.WalkingControl;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.vakuor.knightsandgoldmines.models.Player;
 
 public class GameLogic extends InputAdapter implements ApplicationListener {
@@ -35,11 +36,14 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     static float aspectRatio;
 
     private Stage stage;
+    private Stage uistage;
+    private InputMultiplexer multiplexer;
 
     private TiledMap map;
     public static OrthogonalTiledMapRenderer renderer;
     private OrthographicCamera camera;
-    private ScreenViewport viewport;
+    private OrthographicCamera uicamera;
+    private Viewport viewport;
     public static Player player;
     private Pool<Rectangle> rectPool = new Pool<Rectangle>() {
         @Override
@@ -52,57 +56,139 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     private static final float GRAVITY = -2.5f;
 
     private boolean debug = true;
+    private boolean oldtouch = false;
     private ShapeRenderer debugRenderer;
 
     public static Array<TextureAtlas.AtlasRegion> controlsframes;
 
     //TouchPad
-    //private SpriteBatch batch;
+    ////private SpriteBatch batch;
     private Touchpad touchpad;
     private Touchpad.TouchpadStyle touchpadStyle;
     private Skin touchpadSkin;
     private Drawable touchBackground;
     private Drawable touchKnob;
+    private float touchScale = 1f;
+
+    private Touchpad touchpadR;
+
+    private Slider sliderZoom;
+    private Skin sliderSkin;
+    private Slider.SliderStyle sliderStyle;
+    private Touchpad zoomP;
+    private Touchpad zoomM;
+    private Touchpad.TouchpadStyle zoomPStyle;
+    private Touchpad.TouchpadStyle zoomMStyle;
+    private Skin zoomPSkin;
+    private Skin zoomMSkin;
+    private Drawable zoomIn;
+    private Drawable zoomOut;
+    private float zoomScale = 0.5f;
+    private float zoomVal = 1.25f;
+
     /////////////////////////////////////////////////////
 
     @Override
     public void create() {
-
+        // load the map, set the unit scale to 1/12 (1 unit == 12 pixels)
+        map = new TmxMapLoader().load("logical/maps/Map/level1.tmx");
+        renderer = new OrthogonalTiledMapRenderer(map, 1 / 12f);
+        stage = new Stage();
+        uistage = new Stage();
+        multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(uistage);
+        player = new Player();
         aspectRatio = (float) Gdx.graphics.getWidth()/(float) Gdx.graphics.getHeight();
-        camera = new OrthographicCamera();
         viewport = new ScreenViewport();
-        camera.setToOrtho(false, 30f, 20f);
+        camera = (OrthographicCamera) stage.getCamera();
+        camera.setToOrtho(false, 20f*aspectRatio, 20f);
 
         //touchpadskin
         controlsframes = new TextureAtlas("visual/output/flatDark/Controls.atlas")
                 .findRegions("flatDark");
-
-
         touchpadSkin = new Skin();
         touchpadSkin.add("touchBackground",new Texture(Gdx.files.internal("visual/input/flatDark/flatDark_10.png")));
         touchpadSkin.add("touchKnob",new Texture(Gdx.files.internal("visual/input/flatDark/flatDark_00.png")));
+        touchpadSkin.add("zoomIn",new Texture(Gdx.files.internal("visual/input/flatDark/flatDark_12.png")));
+        touchpadSkin.add("zoomOut",new Texture(Gdx.files.internal("visual/input/flatDark/flatDark_14.png")));
+
         touchpadStyle = new Touchpad.TouchpadStyle();
         touchBackground = touchpadSkin.getDrawable("touchBackground");
         touchKnob = touchpadSkin.getDrawable("touchKnob");
+        zoomIn = touchpadSkin.getDrawable("zoomIn");
+        zoomOut = touchpadSkin.getDrawable("zoomOut");
         touchpadStyle.background = touchBackground;
         touchpadStyle.knob = touchKnob;
+
         touchpad = new Touchpad(10,touchpadStyle);
-        touchpad.setBounds(15,15,200,200);
+        touchScale=0.2f;
+        touchpad.setBounds(15,15,Gdx.graphics.getWidth()*touchScale,Gdx.graphics.getHeight()*aspectRatio*touchScale);
+        touchpadStyle.knob.setMinHeight(touchpad.getHeight()*0.5f);
+        touchpadStyle.knob.setMinWidth(touchpad.getWidth()*0.5f);
 
-        stage = new Stage(viewport);
-        stage.addActor(touchpad);
-        Gdx.input.setInputProcessor(stage);
-        // load the map, set the unit scale to 1/12 (1 unit == 12 pixels)
-        map = new TmxMapLoader().load("logical/maps/Map/level1.tmx");
-        renderer = new OrthogonalTiledMapRenderer(map, 1 / 12f);
+        touchpadR = new Touchpad(10,touchpadStyle);
+        touchpadR.setBounds(Gdx.graphics.getWidth()-Gdx.graphics.getWidth()*touchScale-15,15,Gdx.graphics.getWidth()*touchScale,Gdx.graphics.getHeight()*aspectRatio*touchScale);
 
-        player = new Player();
+
+        sliderStyle = new Slider.SliderStyle();
+
+        int pixheight = 10;
+
+        Pixmap pixmap = new Pixmap(100, 20, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.BLACK);
+        pixmap.fill();
+        TextureRegionDrawable drawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
+        pixheight=pixmap.getHeight();
+        pixmap.dispose();
+
+        sliderStyle.background = drawable;
+
+        pixmap = new Pixmap(0, 10, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.GREEN);
+        pixmap.fill();
+        drawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
+        pixmap.dispose();
+
+        sliderStyle.knob = drawable;
+
+        pixmap = new Pixmap(100, 10-3, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.GRAY);
+        pixmap.fill();
+        drawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
+
+
+
+
+        sliderStyle.knobBefore = drawable;
+
+        sliderZoom = new Slider(0.5f,2,0.01f,false,sliderStyle);
+        sliderZoom.setBounds(Gdx.graphics.getWidth()/2-Gdx.graphics.getWidth()*zoomScale/2,Gdx.graphics.getHeight()-15-(pixheight)/2,Gdx.graphics.getWidth()*zoomScale,pixheight);
+        sliderZoom.setValue(1f*zoomVal);
+        camera.zoom=sliderZoom.getValue()/zoomVal;
+        pixmap.dispose();
+
+
+        /*
+        private Touchpad zoomP;
+        private Touchpad zoomM;
+        private Touchpad.TouchpadStyle zoomPStyle;
+        private Touchpad.TouchpadStyle zoomMStyle;
+        private Skin zoomPSkin;
+        private Skin zoomMSkin;
+        private Drawable zoomPKnob;
+        private Drawable zoomMKnob;
+        private float zoomScale = 1f;
+         */
+
+
         stage.getRoot().addActor(player);
+        uistage.getRoot().addActor(touchpad);
+        uistage.getRoot().addActor(touchpadR);
+        uistage.getRoot().addActor(sliderZoom);
+        Gdx.input.setInputProcessor(multiplexer);
+//        uicamera.zoom=5;
         player.setPosition(20, 20);
-
-        // create an orthographic camera, shows us 30x20 units of the world
-        //camera = (OrthographicCamera) stage.getCamera();
-        //camera.setToOrtho(false, 30, 20);
 
         camera.update();
 
@@ -112,7 +198,8 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     @Override
     public void resize(int width, int height) {
         aspectRatio = (float) Gdx.graphics.getWidth()/(float) Gdx.graphics.getHeight();
-        viewport.update(width,height);
+        //viewport.update(width,height);
+        System.out.println("resize");
     }
 
     @Override
@@ -120,15 +207,31 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         // clear the screen
         Gdx.gl.glClearColor(0.7f, 0.7f, 1.0f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
+        //System.out.println(camera.zoom);
         float deltaTime = Gdx.graphics.getDeltaTime();
-
+        if (sliderZoom.isDragging()){
+            camera.zoom = sliderZoom.getValue()/zoomVal;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.H)) {
+            camera.zoom += 0.02;
+            System.out.println(camera.zoom);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.J)) {
+            camera.zoom -= 0.02;
+            System.out.println(camera.zoom);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
+            oldtouch = !oldtouch;
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)){
+            player.setPosition(20, 20);
+        }
         // update the koala (process input, collision detection, position update)
         updatePlayer(deltaTime);
 
         // let the camera follow the koala, x-axis only
-        camera.position.x = player.getPosition().x;
-        camera.position.y = player.getPosition().y;
+        camera.position.x = player.getPosition().x+player.WIDTH/2;
+        camera.position.y = player.getPosition().y+player.HEIGHT;
         camera.update();
 
         // set the TiledMapRenderer view based on what the
@@ -136,9 +239,13 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         renderer.setView(camera);
         renderer.render();
 
-        stage.act(deltaTime);
-        stage.draw();
 
+        stage.act(deltaTime);
+        uistage.act(deltaTime);
+        stage.draw();
+        uistage.draw();
+
+        if(player.velocity.x!=0)System.out.println(player.velocity.x);
 //        stage.getBatch().begin();
 //        control.draw((SpriteBatch) stage.getBatch());
 //        stage.getBatch().end();
@@ -150,16 +257,20 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
     private void updatePlayer(float deltaTime) {
 
+        //System.out.println(touchpad.getKnobPercentX()+ " " + touchpad.getKnobPercentY());
+        if(touchpad.getKnobPercentX()!=0) player.move(touchpad.getKnobPercentX());
+        if(touchpad.getKnobPercentY()>0.4 && player.isGrounded()) player.jump();
+
         // check input and apply to velocity & state
-        if ((Gdx.input.isKeyJustPressed(Input.Keys.SPACE)|| isTouched(0.5f, 1)) && player.isGrounded()) {
+        if ((Gdx.input.isKeyJustPressed(Input.Keys.SPACE)|| (isTouched(0.5f, 1)&&oldtouch)) && player.isGrounded()) {
             player.jump();
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A) || isTouched(0, 0.25f)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A) || (isTouched(0, 0.25f)&&oldtouch)) {
             player.move(false);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D) || isTouched(0.25f, 0.5f)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D) || (isTouched(0.25f, 0.5f)&&oldtouch)) {
             player.move(true);
         }
 
@@ -172,6 +283,10 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         // multiply by delta time so we know how far we go
         // in this frame
         player.velocity.scl(deltaTime);
+        player.position.x+=0.25f;
+        Player.WIDTH-=0.5f;
+        player.position.y+=0.2f;
+        Player.HEIGHT-=0.4f;
         // perform collision detection & response, on each axis, separately//todo:вынести эту хрень отсюда
         // if the player is moving right, check the tiles to the right of it's
         // right bounding box edge, otherwise check the ones to the left
@@ -230,6 +345,10 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
         // unscale the velocity by the inverse delta time and set
         // the latest position
+        player.position.x-=0.25f;
+        Player.WIDTH+=0.5f;
+        player.position.y-=0.2f;
+        Player.HEIGHT+=0.4f;
         player.position.add(player.velocity);
         player.velocity.scl(1 / deltaTime);
 
@@ -291,12 +410,12 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
     @Override
     public void pause() {
-
+//        System.out.println("pause");
     }
 
     @Override
     public void resume() {
-
+//        System.out.println("resume");
     }
 
     @Override

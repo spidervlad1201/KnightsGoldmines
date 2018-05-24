@@ -19,8 +19,8 @@ public class DesktopLauncher {
     private static LwjglApplicationConfiguration getDefaultConfiguration() {
         LwjglApplicationConfiguration configuration = new LwjglApplicationConfiguration();
         configuration.title = "Knights and goldmines";
-        configuration.width = 640;
-        configuration.height = 480;
+        configuration.width = 512;
+        configuration.height = 320;
         for (int size : new int[] { 128, 64, 32, 16 }) {
             configuration.addIcon("main/libgdx" + size + ".png", FileType.Internal);
         }

@@ -1,19 +1,13 @@
 package com.vakuor.knightsandgoldmines.models;
 
-import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
-import com.vakuor.knightsandgoldmines.GameLogic;
 
 public class Player extends Actor {
     public static float WIDTH;
@@ -21,6 +15,8 @@ public class Player extends Actor {
     public static float HeadWIDTH;
     public static float HeadHEIGHT;
     public static float MAX_VELOCITY = 10f;
+    public static float MAX_MOVEVELOCITY = 10f;
+    public static float VELOCITYCNST = 2f;
     public static float JUMP_VELOCITY = 40f;
     public static float DAMPING = 0.87f;
 
@@ -36,6 +32,9 @@ public class Player extends Actor {
     State state = State.Walking;
     Headstate headstate = Headstate.Calm;
     float stateTime = 0;
+    float dlt = 0;
+    float headX=0;
+    boolean hd = false;
     boolean facesRight = true;
     boolean grounded = false;
 
@@ -51,7 +50,7 @@ public class Player extends Actor {
     private Array<TextureAtlas.AtlasRegion> headframes;
 
     public Player(){
-        playerTextureAtlas = new TextureAtlas("visual/output/Archer/Archers.atlas");
+        playerTextureAtlas = new TextureAtlas("visual/output/Archer/Archers2.atlas");
         headsTextureAtlas = new TextureAtlas("visual/output/Head/Heads.atlas");
         bodyframes =  playerTextureAtlas.findRegions("body");
         standframes =  playerTextureAtlas.findRegions("idle");
@@ -82,27 +81,46 @@ public class Player extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
+        Player.HeadHEIGHT = 0.05f+position.y+Player.HEIGHT/3+headX;
+
+
+
         TextureRegion frame = null;
         TextureRegion headframe = null;
-        if(velocity.y<-10 || velocity.y > 10) state = State.Jumping;
+        if(velocity.y<-5 || velocity.y > 10) state = State.Jumping;
         switch (state) {
-            case Standing:
+            case Standing:{
                 frame = stand.getKeyFrame(stateTime);
-                break;
+                headX=0;
+                break;}
             case Walking: {
                 frame = walk.getKeyFrame(stateTime);
-
+                if ((stateTime-dlt)>0.5f){
+                    dlt = stateTime;
+                    if (hd == true) {
+                        headX=0.05f;
+                        hd = false;
+                    }
+                    else {headX=0.1f;
+                        hd=true;}
+                }
                 break;
             }
             case Jumping:{
                 if(velocity.y>=0){
                     frame = jump.getKeyFrame(0);
+
+                    headX=-0.05f;
                 }
                 else if(velocity.y<-30){
                     frame = jump.getKeyFrame(2);
+
+                    headX=0.1f;
                 }
                 else if(velocity.y<0){
                     frame = jump.getKeyFrame(1);
+
+                    headX=0.05f;
                 }
                 break;
             }
@@ -120,11 +138,11 @@ public class Player extends Actor {
             }
         }
         if (facesRight) {
-            batch.draw(frame,  position.x-Player.WIDTH/2,  position.y-Player.HEIGHT/2-0.5f/Player.HEIGHT, Player.WIDTH*2, Player.HEIGHT*2);
-            batch.draw(headframe,  position.x+HeadWIDTH,  position.y+Player.HEIGHT/3+HeadHEIGHT, Player.WIDTH, Player.HEIGHT);
+            batch.draw(frame,  position.x-Player.WIDTH/2,  position.y-Player.HEIGHT/2-0.5f/Player.HEIGHT+0.2f, Player.WIDTH*2, Player.HEIGHT*2-0.5f);
+            batch.draw(headframe,  position.x+HeadWIDTH,  HeadHEIGHT-0.15f, Player.WIDTH, Player.HEIGHT-0.05f);
         } else {
-            batch.draw(frame,  position.x + 1.5f*Player.WIDTH,  position.y-Player.HEIGHT/2-0.5f/Player.HEIGHT, -Player.WIDTH*2, Player.HEIGHT*2);
-            batch.draw(headframe,  position.x+Player.WIDTH -HeadWIDTH,  position.y+Player.HEIGHT/3+HeadHEIGHT, -Player.WIDTH, Player.HEIGHT);
+            batch.draw(frame,  position.x + 1.5f*Player.WIDTH,  position.y-Player.HEIGHT/2-0.5f/Player.HEIGHT+0.2f, -Player.WIDTH*2, Player.HEIGHT*2-0.5f);
+            batch.draw(headframe,  position.x+Player.WIDTH-HeadWIDTH,  HeadHEIGHT-0.15f, -Player.WIDTH, Player.HEIGHT-0.05f);
         }
     }
 
@@ -133,17 +151,25 @@ public class Player extends Actor {
         state = Player.State.Jumping;
         grounded = false;
     }
-    public void move(boolean dir){
-        if(dir){
-            velocity.x = Player.MAX_VELOCITY;
-            if (grounded) state = Player.State.Walking;
-            facesRight = true;
+    public void move(boolean dir) {
+        if (Math.abs(velocity.x)<=Player.MAX_VELOCITY-Player.VELOCITYCNST) {
+            if (dir) {
+                //velocity.x += Player.VELOCITYCNST;
+                addVelocity(Player.VELOCITYCNST,0);
+                if (grounded) state = Player.State.Walking;
+                facesRight = true;
+            } else {
+                velocity.x = -Player.MAX_VELOCITY;
+                if (grounded) state = Player.State.Walking;
+                facesRight = false;
+            }
         }
-        else {
-            velocity.x = -Player.MAX_VELOCITY;
-            if (grounded) state = Player.State.Walking;
-            facesRight = false;
-        }
+    }
+    public void move (float x){
+        velocity.x = Player.MAX_VELOCITY*x;
+        if (grounded) state = Player.State.Walking;
+        if(x>0) facesRight = true;
+        else facesRight = false;
     }
     public boolean isGrounded(){
         return grounded;
