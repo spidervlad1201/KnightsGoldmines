@@ -29,6 +29,7 @@ import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.vakuor.knightsandgoldmines.models.Player;
+import com.vakuor.knightsandgoldmines.utilities.TiledRaycastCollisionDetector;
 
 public class GameLogic extends InputAdapter implements ApplicationListener {
 
@@ -41,6 +42,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
     private TiledMap map;
     public static OrthogonalTiledMapRenderer renderer;
+    private TiledRaycastCollisionDetector detector;
     private OrthographicCamera camera;
     private OrthographicCamera uicamera;
     private Viewport viewport;
@@ -92,6 +94,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     public void create() {
         // load the map, set the unit scale to 1/12 (1 unit == 12 pixels)
         map = new TmxMapLoader().load("logical/maps/Map/level1.tmx");
+        detector = new TiledRaycastCollisionDetector(map.);
         renderer = new OrthogonalTiledMapRenderer(map, 1 / 12f);
         stage = new Stage();
         uistage = new Stage();
