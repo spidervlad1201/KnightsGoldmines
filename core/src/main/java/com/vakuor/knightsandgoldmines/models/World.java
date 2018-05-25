@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.vakuor.knightsandgoldmines.controls.WalkingControl;
 
 public class World extends Stage {
 
@@ -20,8 +19,6 @@ public class World extends Stage {
 
     public World(int x, int y, boolean b, SpriteBatch spriteBatch){
         //добавим двух персонажей
-        //контрол как актёр
-        //addActor(new WalkingControl(new Vector2(0F,0F)));
     }
 
 

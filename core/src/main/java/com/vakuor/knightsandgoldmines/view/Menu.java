@@ -83,7 +83,6 @@ public class Menu implements Screen {
         game.batch.end();
 
         if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-            //game.setScreen(new MainGameScreen(game));
             new GameLogic();
             dispose();
         }

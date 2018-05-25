@@ -41,20 +41,7 @@ public class Main extends Game {
             fps = frames;
         javaHeap = Gdx.app.getJavaHeap();//потребление памяти Java//лишнее
         nativeHeap = Gdx.app.getNativeHeap();//нативной heap памяти//лишнее
-
-//		if(Gdx.input.isTouched()) {//плохо - создание экземпляра класса
-//			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-//			camera.unproject(touchPos);
-//			player.x = touchPos.x - player.width/2;
-//		}
-//		camera.update();
-//		batch.setProjectionMatrix(camera.combined);
-//		batch.begin();
-//		batch.draw(img, 0, 0);
-//		batch.end();
     }
-
-
     @Override
     public void dispose () {
         font.dispose();
