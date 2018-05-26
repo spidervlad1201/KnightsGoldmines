@@ -33,6 +33,7 @@ import com.vakuor.knightsandgoldmines.models.Player;
 
 public class GameLogic extends InputAdapter implements ApplicationListener {
 
+    public static float deltaTime = 0;
     private static float aspectRatio;
     private Stage stage;
     private Stage uistage;
@@ -41,7 +42,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     private TiledMap map;
     private static OrthogonalTiledMapRenderer renderer;
     private OrthographicCamera camera;
-    private Viewport viewport;
+    //private Viewport viewport;
     private static Player player;
     private Pool<Rectangle> rectPool = new Pool<Rectangle>() {
         @Override
@@ -66,7 +67,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     private Drawable touchKnob;
     private float touchScale = 1f;
 
-    private Touchpad touchpadR;
+    public static Touchpad touchpadR;
 
     private Slider sliderZoom;
     private Slider.SliderStyle sliderStyle;
@@ -89,7 +90,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         multiplexer.addProcessor(uistage);
         player = new Player();
         aspectRatio = (float) Gdx.graphics.getWidth()/(float) Gdx.graphics.getHeight();
-        viewport = new ScreenViewport();
+        //viewport = new ScreenViewport();
         camera = (OrthographicCamera) stage.getCamera();
         camera.setToOrtho(false, 20f*aspectRatio, 20f);
 
@@ -170,8 +171,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     public void render() {
         Gdx.gl.glClearColor(0.7f, 0.7f, 1.0f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        float deltaTime = Gdx.graphics.getDeltaTime();
-
+        deltaTime = Gdx.graphics.getDeltaTime();
         updateControls();
         // update the koala (process input, collision detection, position update)
         updatePlayer(deltaTime);
@@ -197,9 +197,6 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
 
     private void updatePlayer(float deltaTime) {
-
-        Vector2 v = new Vector2(touchpad.getKnobPercentX(), touchpad.getKnobPercentY());
-        float angle = v.angle();
 
         //System.out.println(touchpad.getKnobPercentX()+ " " + touchpad.getKnobPercentY());
         player.addVelocity(0, GRAVITY);
@@ -270,29 +267,32 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     }
 
     private void updateControls(){
+            player.shooting = touchpadR.isTouched();
+
+        if(touchpad.getKnobPercentX()!=0) player.move(touchpad.getKnobPercentX());
+        if(touchpad.getKnobPercentY()>0.4 && player.isGrounded()) player.jump();
+
+
         if (sliderZoom.isDragging()){
-            camera.zoom = sliderZoom.getValue()/zoomVal;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.H)) {
-            camera.zoom += 0.02;
-            System.out.println(camera.zoom);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.J)) {
-            camera.zoom -= 0.02;
-            System.out.println(camera.zoom);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
-            oldtouch = !oldtouch;
-            touchpad.setVisible(!oldtouch);
+                camera.zoom = sliderZoom.getValue()/zoomVal;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.H)) {
+                camera.zoom += 0.02;
+                System.out.println(camera.zoom);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.J)) {
+                camera.zoom -= 0.02;
+                System.out.println(camera.zoom);
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
+                oldtouch = !oldtouch;
+                touchpad.setVisible(!oldtouch);
 
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)){
             player.setPosition(20, 20);
             player.addVelocity(-player.velocity.x,-player.velocity.y);
         }
-        if(touchpad.getKnobPercentX()!=0) player.move(touchpad.getKnobPercentX());
-        if(touchpad.getKnobPercentY()>0.4 && player.isGrounded()) player.jump();
-
         // check input and apply to velocity & state
         if ((Gdx.input.isKeyJustPressed(Input.Keys.SPACE)|| (isTouched(0.5f, 1)&&oldtouch)) && player.isGrounded()) {
             player.jump();
