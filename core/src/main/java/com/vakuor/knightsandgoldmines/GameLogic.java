@@ -19,6 +19,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -31,8 +32,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.vakuor.knightsandgoldmines.models.Enemy;
 import com.vakuor.knightsandgoldmines.models.Player;
 
 public class GameLogic extends InputAdapter implements ApplicationListener {
@@ -42,13 +45,16 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     private Stage stage, uistage;
     private InputMultiplexer multiplexer;
 
-    private TiledMap map;
-    private TiledMapTile myTile;
-    private boolean tileDebug = false;
+    public static TiledMap map;
+    public static TiledMapTile myTile;
+    public static boolean tileDebug = false;
     private static OrthogonalTiledMapRenderer renderer;
     private OrthographicCamera camera;
     //private Viewport viewport;
-    private static Player player;
+    public static Player player;
+    private static Enemy enemy;
+    public static Array<Enemy> enemies;
+    long lastEnemySpawnTime = 5;
     private Pool<Rectangle> rectPool = new Pool<Rectangle>() {
         @Override
         protected Rectangle newObject() {
@@ -57,9 +63,9 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     };
     private Array<Rectangle> tiles = new Array<Rectangle>();
 
-    private static final float GRAVITY = -2.5f;
+    public static final float GRAVITY = -2.5f;
 
-    private boolean debug = true;
+    private boolean debug = false;
     private boolean oldtouch = false;
     private ShapeRenderer debugRenderer;
 
@@ -68,7 +74,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     private Slider sliderZoom;
     private float zoomVal = 1.25f;
 
-    public Label healthLabel;
+    public static Label healthLabel;
 
     /////////////////////////////////////////////////////
 
@@ -85,7 +91,10 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
         multiplexer.addProcessor(uistage);
-        player = new Player();
+        player = new Player(20,20);
+        //enemy = new Enemy(25,25);
+        enemies = new Array<Enemy>();
+        //enemies.add(enemy);
         aspectRatio = (float) Gdx.graphics.getWidth()/(float) Gdx.graphics.getHeight();
         //viewport = new ScreenViewport();
         camera = (OrthographicCamera) stage.getCamera();
@@ -109,9 +118,13 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         Gdx.gl.glClearColor(0.7f, 0.7f, 1.0f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         deltaTime = Gdx.graphics.getDeltaTime();
+        if(TimeUtils.millis() - lastEnemySpawnTime > 25000) spawnEnemy();
         updateControls();
         // update the koala (process input, collision detection, position update)
-        updatePlayer(deltaTime);
+        //enemy.move(enemy.position.x<player.position.x);
+        //enemy.update();
+        //player.update();
+
 
         // let the camera follow the koala, x-axis only
         camera.position.x = player.getPosition().x+player.WIDTH/2;
@@ -132,95 +145,13 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         if (debug) renderDebug();
     }
 
-
-    private void updatePlayer(float deltaTime) {
-
-        //System.out.println(touchpad.getKnobPercentX()+ " " + touchpad.getKnobPercentY());
-        player.addVelocity(0, GRAVITY);
-        // multiply by delta time so we know how far we go in this frame
-        player.velocity.scl(deltaTime);
-        player.position.x+=0.25f; player.position.y+=0.2f;
-        Player.WIDTH-=0.5f; Player.HEIGHT-=0.4f;
-        // perform collision detection & response, on each axis, separately//todo:вынести эту хрень отсюда
-        // if the player is moving right, check the tiles to the right of it's
-        // right bounding box edge, otherwise check the ones to the left
-        Rectangle playerRect = rectPool.obtain();
-        playerRect.set(player.position.x, player.position.y, Player.WIDTH, Player.HEIGHT);
-        if (player.velocity.x > 0) {
-            startX = endX = (int) (player.position.x + Player.WIDTH + player.velocity.x); }
-        else {
-            startX = endX = (int) (player.position.x + player.velocity.x);
-        }
-
-        startY = (int) (player.position.y);
-        endY = (int) (player.position.y + Player.HEIGHT);
-        getTiles(startX, startY, endX, endY, tiles);
-        playerRect.x += player.velocity.x;//good without deltaTime
-        for (Rectangle tile : tiles) {
-            if (playerRect.overlaps(tile)) {
-                if(player.isGrounded()){
-                    if(player.velocity.x<0)
-                        player.position.x = tile.x + tile.width;
-                    else player.position.x=tile.x-player.WIDTH;
-                }
-                player.velocity.x = 0;
-                if(player.climb){
-                    //player.addVelocity(0,player.climbconst);
-                    player.isclimbing=true;
-                    player.velocity.y=player.climbconst;
-                    player.setGrounded(false);
-                }
-                //else player.isclimbing = false;
-                //System.out.println(player.isclimbing);
-                break;
-            }
-            //else System.out.println("NO");
-        }
-        playerRect.x = player.position.x;
-        // if the player is moving upwards, check the tiles to the top of its
-        // top bounding box edge, otherwise check the ones to the bottom
-        if (player.velocity.y > 0) {
-            startY = endY = (int) (player.position.y + Player.HEIGHT + player.velocity.y); }
-        else {
-            startY = endY = (int) (player.position.y + player.velocity.y);
-        }
-        startX = (int) (player.position.x);
-        endX = (int) (player.position.x + Player.WIDTH);
-        getTiles(startX, startY, endX, endY, tiles);
-        playerRect.y += player.velocity.y;
-        for (Rectangle tile : tiles) {
-            if (playerRect.overlaps(tile)) {
-                // we actually reset the player y-position here
-                // so it is just below/above the tile we collided with
-                // this removes bouncing :)
-                if (player.velocity.y > 0) {
-                    player.position.y = tile.y - Player.HEIGHT;
-                    // we hit a block jumping upwards, let's destroy it!
-                    TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get("walls");
-                    layer.setCell((int) tile.x, (int) tile.y, null);
-                } else {
-                    player.position.y = tile.y + tile.height;
-                    player.setGrounded(true);// if we hit the ground, mark us as grounded so we can jump
-                }
-                player.velocity.y = 0; break;
-            }
-        }
-        rectPool.free(playerRect);
-
-        // unscale the velocity by the inverse delta time and set
-        // the latest position
-        player.position.x-=0.25f; player.position.y-=0.2f;
-        Player.WIDTH+=0.5f; Player.HEIGHT+=0.4f;
-        player.position.add(player.velocity);
-        player.velocity.scl(1 / deltaTime);
-        // Apply damping to the velocity on the x-axis so we don't
-        // walk infinitely once a key was pressed
-        player.velocity.x *= player.DAMPING;
-    }
-
     private void updateControls(){
             player.shooting = touchpadR.isTouched();
 
+        if(!player.attacked&&touchpadR.getKnobPercentX()!=0){
+            //attack
+            player.attack();
+        }
         if(touchpad.getKnobPercentX()!=0) player.move(touchpad.getKnobPercentX());
         else
 
@@ -241,11 +172,9 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
             }
             if (Gdx.input.isKeyPressed(Input.Keys.H)) {
                 camera.zoom += 0.02;
-                System.out.println(camera.zoom);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.J)) {
                 camera.zoom -= 0.02;
-                System.out.println(camera.zoom);
             }
             if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
                 oldtouch = !oldtouch;
@@ -253,10 +182,14 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)){
-            player.setPosition(20, 20);
-            player.addVelocity(-player.velocity.x,-player.velocity.y);
-            map = new TmxMapLoader().load("logical/maps/Map/level1.tmx");
-            renderer = new OrthogonalTiledMapRenderer(map, 1 / 12f);
+            create();
+//
+//            player.setPosition(20, 20);
+//            enemy.setPosition(25,25);
+//            player.addVelocity(-player.velocity.x,-player.velocity.y);
+//            enemy.addVelocity(-enemy.velocity.x,-enemy.velocity.y);
+//            map = new TmxMapLoader().load("logical/maps/Map/level1.tmx");
+//            renderer = new OrthogonalTiledMapRenderer(map, 1 / 12f);
 
 
         }
@@ -270,6 +203,14 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         if (Gdx.input.isKeyJustPressed(Input.Keys.B))
             debug = !debug;
 
+    }
+    private void spawnEnemy() {
+        Enemy enemy = new Enemy(25,25);
+        //enemy.MAX_VELOCITY= MathUtils.random(1, 8);
+        enemies.add(enemy);
+
+        stage.getRoot().addActor(enemy);
+        lastEnemySpawnTime = TimeUtils.millis();
     }
     private void createTouches(){
 
@@ -330,18 +271,20 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(),Color.BLACK);
         healthLabel = new Label("null",labelStyle);
-        healthLabel.setSize(5,5);
-        healthLabel.setPosition(20,Gdx.graphics.getHeight()- 20, Align.left);
+        healthLabel.setSize(player.WIDTH, Player.HEIGHT/2);
+        healthLabel.setPosition(20,Gdx.graphics.getHeight()- 20- Player.HEIGHT, Align.left);
         healthLabel.setText(String.valueOf(player.getHealth()));
     }
     private void addToStages(){
+//        stage.getRoot().addActor(enemy);
         stage.getRoot().addActor(player);
         uistage.getRoot().addActor(touchpad);
         uistage.getRoot().addActor(touchpadR);
         uistage.getRoot().addActor(sliderZoom);
         uistage.getRoot().addActor(healthLabel);
         Gdx.input.setInputProcessor(multiplexer);
-        player.setPosition(20, 20);
+//        enemy.setPosition(25, 25);
+//        player.setPosition(20, 20);
     }
 
     private boolean isTouched(float startX, float endX) {
@@ -356,7 +299,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         return false;
     }
 
-    private void getTiles(int startX, int startY, int endX, int endY, Array<Rectangle> tiles) {
+    public void getTiles(int startX, int startY, int endX, int endY, Array<Rectangle> tiles) {
         TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get("walls");
         rectPool.freeAll(tiles);
         tiles.clear();
@@ -379,6 +322,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
         debugRenderer.setColor(Color.RED);
         debugRenderer.rect(player.position.x, player.position.y, Player.WIDTH, Player.HEIGHT);
+        debugRenderer.rect(enemy.position.x, enemy.position.y, Enemy.WIDTH, Enemy.HEIGHT);
 
         debugRenderer.setColor(Color.YELLOW);
         TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get("walls");
@@ -396,7 +340,8 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
 
     @Override
     public void pause() {
-//        System.out.println("pause");
+        Gdx.app.exit();
+        System.out.println("pause");
     }
 
     @Override

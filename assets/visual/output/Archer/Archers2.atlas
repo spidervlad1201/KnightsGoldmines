@@ -1,138 +1,166 @@
 
 Archers2.png
-size: 128,256
+size: 1024,64
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 arm
   rotate: false
-  xy: 2, 206
+  xy: 2, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 1
 arm
   rotate: false
-  xy: 2, 172
+  xy: 36, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 2
 arm
   rotate: false
-  xy: 36, 206
+  xy: 70, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 3
+attackBody
+  rotate: false
+  xy: 104, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 1
+attackBody
+  rotate: false
+  xy: 138, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 2
+attackBody
+  rotate: false
+  xy: 172, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: 3
+attackBodyx
+  rotate: false
+  xy: 206, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 3
 body
   rotate: false
-  xy: 2, 138
+  xy: 240, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 1
 body
   rotate: false
-  xy: 36, 172
+  xy: 274, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 2
 body
   rotate: false
-  xy: 70, 206
+  xy: 308, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 3
 body
   rotate: false
-  xy: 2, 104
+  xy: 342, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 4
 idle
   rotate: false
-  xy: 36, 138
+  xy: 376, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 1
 jump
   rotate: false
-  xy: 70, 172
+  xy: 410, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 1
 jump
   rotate: false
-  xy: 2, 70
+  xy: 444, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 2
 jump
   rotate: false
-  xy: 36, 104
+  xy: 478, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 3
 lie
   rotate: false
-  xy: 70, 138
+  xy: 512, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 shot
   rotate: false
-  xy: 36, 2
+  xy: 750, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 1
 shotBody
   rotate: false
-  xy: 36, 36
+  xy: 682, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 1
 shotBody
   rotate: false
-  xy: 70, 70
+  xy: 716, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 2
 shotBodyRun
   rotate: false
-  xy: 2, 36
+  xy: 546, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 1
 shotBodyRun
   rotate: false
-  xy: 36, 70
+  xy: 580, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 2
 shotBodyRun
   rotate: false
-  xy: 70, 104
+  xy: 614, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 3
 shotBodyRun
   rotate: false
-  xy: 2, 2
+  xy: 648, 2
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
