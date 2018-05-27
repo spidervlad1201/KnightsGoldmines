@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -21,11 +22,13 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -64,6 +67,8 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
     public static Touchpad touchpadR;
     private Slider sliderZoom;
     private float zoomVal = 1.25f;
+
+    public Label healthLabel;
 
     /////////////////////////////////////////////////////
 
@@ -159,6 +164,14 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
                     else player.position.x=tile.x-player.WIDTH;
                 }
                 player.velocity.x = 0;
+                if(player.climb){
+                    //player.addVelocity(0,player.climbconst);
+                    player.isclimbing=true;
+                    player.velocity.y=player.climbconst;
+                    player.setGrounded(false);
+                }
+                //else player.isclimbing = false;
+                //System.out.println(player.isclimbing);
                 break;
             }
             //else System.out.println("NO");
@@ -209,6 +222,17 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
             player.shooting = touchpadR.isTouched();
 
         if(touchpad.getKnobPercentX()!=0) player.move(touchpad.getKnobPercentX());
+        else
+
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A) || (isTouched(0, 0.25f)&&oldtouch)) {
+            player.move(false);
+        }
+        else
+
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D) || (isTouched(0.25f, 0.5f)&&oldtouch)) {
+            player.move(true);
+        }
+        else player.ismoving=false;
         if(touchpad.getKnobPercentY()>0.4 && player.isGrounded()) player.jump();
 
 
@@ -241,13 +265,7 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
             player.jump();
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A) || (isTouched(0, 0.25f)&&oldtouch)) {
-            player.move(false);
-        }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D) || (isTouched(0.25f, 0.5f)&&oldtouch)) {
-            player.move(true);
-        }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.B))
             debug = !debug;
@@ -309,12 +327,19 @@ public class GameLogic extends InputAdapter implements ApplicationListener {
         sliderZoom.setValue(1f*zoomVal);
         camera.zoom=sliderZoom.getValue()/zoomVal;
         pixmap.dispose();
+
+        Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(),Color.BLACK);
+        healthLabel = new Label("null",labelStyle);
+        healthLabel.setSize(5,5);
+        healthLabel.setPosition(20,Gdx.graphics.getHeight()- 20, Align.left);
+        healthLabel.setText(String.valueOf(player.getHealth()));
     }
     private void addToStages(){
         stage.getRoot().addActor(player);
         uistage.getRoot().addActor(touchpad);
         uistage.getRoot().addActor(touchpadR);
         uistage.getRoot().addActor(sliderZoom);
+        uistage.getRoot().addActor(healthLabel);
         Gdx.input.setInputProcessor(multiplexer);
         player.setPosition(20, 20);
     }

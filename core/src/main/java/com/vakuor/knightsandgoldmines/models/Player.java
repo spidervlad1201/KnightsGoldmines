@@ -1,7 +1,9 @@
 package com.vakuor.knightsandgoldmines.models;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -39,11 +41,19 @@ public class Player extends Actor {
     private float dlt = 0;
     private float headX=0;
     private float bowtime=0;
+    public float climbconst = 0.2f;
+    private float climbingTime = 0;
 
     private boolean hd = false;
     private boolean facesRight = true;
     public boolean shooting = false;
     private boolean grounded = false;
+    public boolean climb = true;
+    public boolean isclimbing = false;
+    public boolean ismoving = false;
+
+    private BitmapFont font;
+    public int health=0;
 
     private Animation<TextureRegion> stand;
     private Animation<TextureRegion> walk;
@@ -66,6 +76,7 @@ public class Player extends Actor {
     private Array<TextureAtlas.AtlasRegion> bowframes;
 
     public Player(){
+        font = new BitmapFont();
         playerTextureAtlas = new TextureAtlas("visual/output/Archer/Archers2.atlas");
         headsTextureAtlas = new TextureAtlas("visual/output/Head/Heads.atlas");
         bodyframes =  playerTextureAtlas.findRegions("body");
@@ -103,6 +114,8 @@ public class Player extends Actor {
     public Vector2 getPosition(){
         return position;
     }
+    public void setHealth(int health){this.health=health;}
+    public int getHealth(){return health;}
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
@@ -115,7 +128,7 @@ public class Player extends Actor {
         if(shooting) {
             headstate = Worried;
             bowtime += GameLogic.deltaTime; bowframe = bowshot.getKeyFrame(bowtime);
-            System.out.println(bowtime);
+            //System.out.println(bowtime);
             facesRight = GameLogic.touchpadR.getKnobPercentX() >= 0;
         }
         else {headstate = Calm;bowtime=0;}
@@ -192,6 +205,7 @@ public class Player extends Actor {
             batch.draw(headframe,  position.x+Player.WIDTH-HeadWIDTH,  HeadHEIGHT-0.15f, -Player.WIDTH, Player.HEIGHT-0.05f);
             if(bowframe!=null)batch.draw(bowframe,  position.x + 1.5f*Player.WIDTH-0.2f,  position.y-Player.HEIGHT/2-0.5f/Player.HEIGHT+0.5f, -Player.WIDTH*2, Player.HEIGHT*2-0.5f);
         }
+
     }
 
     public void jump(){
@@ -213,8 +227,10 @@ public class Player extends Actor {
             }
 
         }
+        ismoving=true;
     }
     public void move (float x){
+        ismoving = true;
         velocity.x = Player.MAX_VELOCITY*x;
         if (grounded) state = Player.State.Walking;
         facesRight = x >= 0;
@@ -234,6 +250,13 @@ public class Player extends Actor {
             deltaTime = 0.1f;
 
         stateTime += deltaTime;
+
+        if(climbingTime>climbconst){climb=false;isclimbing=false; climbingTime=0;}
+        else if(isclimbing && climb && ismoving)climbingTime+=deltaTime;
+        else if(isGrounded()){climb=true;climbingTime=0;}
+
+        if(climbingTime!=0)System.out.println(climbingTime);
+
 
         // If the velocity is < 1, set it to 0 and set state to Standing
         if (Math.abs(velocity.x) < 1) {
